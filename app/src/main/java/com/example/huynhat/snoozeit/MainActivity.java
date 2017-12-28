@@ -368,24 +368,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             moveCamera(new LatLng(place.getViewport().getCenter().latitude,place.getViewport().getCenter().longitude)
                     ,DEFAULT_ZOOM, mPlace.getName());
 
-            calDistance();
+            double distance =calDistance();
 
             places.release();
 
             Intent intent = new Intent(MainActivity.this, Second_Activity.class);
+            intent.putExtra("Distance",distance);
             startActivity(intent);
 
         }
     };
 
 
-    private void calDistance(){
+    private double calDistance(){
         LatLng from = new LatLng(currentLattitude, currentLongtiude);
         LatLng to = new LatLng(toLattiude, toLongtitude);
 
         double distance =  SphericalUtil.computeDistanceBetween(from, to);
 
         customToast("Distance is "+distance);
+
+        return distance;
 
 
     }
