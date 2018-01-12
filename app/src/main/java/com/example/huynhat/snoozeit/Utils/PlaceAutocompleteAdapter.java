@@ -1,4 +1,4 @@
-package com.example.huynhat.snoozeit;
+package com.example.huynhat.snoozeit.Utils;
 //Reference: https://github.com/googlesamples/android-play-places
 
 /*

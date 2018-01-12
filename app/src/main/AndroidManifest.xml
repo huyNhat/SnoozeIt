@@ -28,7 +28,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Second_Activity"></activity>
+        <activity android:name=".SnoozeActivity"></activity>
+
+        <service android:name=".Utils.CurrentLocationService" />
     </application>
 
 </manifest>

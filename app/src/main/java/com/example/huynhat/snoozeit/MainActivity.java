@@ -3,7 +3,6 @@ package com.example.huynhat.snoozeit;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,19 +12,18 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.huynhat.snoozeit.Models.PlaceInfo;
+import com.example.huynhat.snoozeit.Utils.PlaceAutocompleteAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -372,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             places.release();
 
-            Intent intent = new Intent(MainActivity.this, Second_Activity.class);
+            Intent intent = new Intent(MainActivity.this, SnoozeActivity.class);
             intent.putExtra("Distance",distance);
             startActivity(intent);
 
@@ -389,7 +387,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         customToast("Distance is "+distance);
 
         return distance;
-
 
     }
 
