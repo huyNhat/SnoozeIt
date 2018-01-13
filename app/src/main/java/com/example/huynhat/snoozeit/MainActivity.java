@@ -372,6 +372,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             Intent intent = new Intent(MainActivity.this, SnoozeActivity.class);
             intent.putExtra("Distance",distance);
+            intent.putExtra("toLat", toLattiude);
+            intent.putExtra("toLong", toLongtitude);
             startActivity(intent);
 
         }

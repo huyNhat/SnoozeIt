@@ -32,7 +32,7 @@ public class CurrentLocationService extends Service implements LocationListener 
 
     private Handler mHandler = new Handler();
     private Timer mTimer = null;
-    long notify_interval = 10000;
+    long notify_interval = 1000;
     Intent intent;
 
     public CurrentLocationService (){
@@ -111,6 +111,7 @@ public class CurrentLocationService extends Service implements LocationListener 
                 }
             }
 
+            /* My phone GPS is dead!!!
             if(isGPSEnable){
                 location=null;
                 if(locationManager!=null){
@@ -123,7 +124,9 @@ public class CurrentLocationService extends Service implements LocationListener 
                     }
                 }
 
+
             }
+            */
         }
     }
 
