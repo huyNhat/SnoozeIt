@@ -1,6 +1,7 @@
 package com.example.huynhat.snoozeit;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PlaceAutocompleteAdapter autocompleteAdapter;
     private GoogleApiClient googleApiClient;
     private PlaceInfo mPlace;
+    private Geofencing geofencing;
 
     private double currentLongtiude;
     private double currentLattitude;
@@ -122,10 +125,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void init(){
         googleApiClient = new GoogleApiClient.Builder(this)
+                                            .addApi(LocationServices.API)
                                             .addApi(Places.GEO_DATA_API)
                                             .addApi(Places.PLACE_DETECTION_API)
                                             .enableAutoManage(this, this)
                                             .build();
+
+        geofencing = new Geofencing(this,googleApiClient);
+
         //OnClick on Item
         searchInput.setOnItemClickListener(autoCompleteListener);
 
@@ -272,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if(task.isSuccessful() && task.getResult() != null){
                         //Location is found
                         Location currentLocation = (Location) task.getResult();
-
+                        //int id= currentLocation.
                         currentLattitude = currentLocation.getLatitude();
                         currentLongtiude = currentLocation.getLongitude();
 
@@ -366,15 +373,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             moveCamera(new LatLng(place.getViewport().getCenter().latitude,place.getViewport().getCenter().longitude)
                     ,DEFAULT_ZOOM, mPlace.getName());
 
-            double distance =calDistance();
+            geofencing.updateGeofencesList(place);
+            geofencing.registerGeofence();
+            hideKeyboard(MainActivity.this);
 
+            Toast.makeText(MainActivity.this, "All set! Chill and we will notify you upon approaching your destination", Toast.LENGTH_LONG).show();
             places.release();
 
+
+
+            /*
+            double distance =calDistance();
             Intent intent = new Intent(MainActivity.this, SnoozeActivity.class);
             intent.putExtra("Distance",distance);
             intent.putExtra("toLat", toLattiude);
             intent.putExtra("toLong", toLongtitude);
             startActivity(intent);
+            */
 
         }
     };
@@ -395,5 +410,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void customToast (String message){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
 
 }

@@ -48,9 +48,7 @@ import com.hookedonplay.decoviewlib.events.DecoEvent;
 
 import java.util.Random;
 
-public class SnoozeActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class SnoozeActivity extends AppCompatActivity  {
 
     private DecoView dynamicDistance;
     private int mBackIndex, mSeries1Index;
@@ -67,6 +65,10 @@ public class SnoozeActivity extends AppCompatActivity implements OnMapReadyCallb
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
+    private LocationCallback mLocationCallback;
+
+    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
 
 
@@ -80,7 +82,6 @@ public class SnoozeActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
     //FusedLocationProviderClient mFusedLocationClient;
-
     /*
     private Handler mHandler = new Handler();
     Runnable runnable = new Runnable() {
@@ -91,6 +92,7 @@ public class SnoozeActivity extends AppCompatActivity implements OnMapReadyCallb
         }
     };
     */
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,78 +203,5 @@ public class SnoozeActivity extends AppCompatActivity implements OnMapReadyCallb
     }
 
 
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        mGoogleApiClient.connect();
-    }
 
-    LocationCallback mLocationCallback = new LocationCallback(){
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-
-            for (Location location : locationResult.getLocations()) {
-
-                mLastLocation = location;
-
-                curLatitude = location.getLatitude();
-                curLongtiude = location.getLongitude();
-
-                float newDistance =  (float) (mSeriesMax-calDistance());
-
-                dynamicDistance.addEvent(new DecoEvent.Builder(newDistance).setIndex(mSeries1Index)
-                        .setDuration(3000).build());
-
-            }
-
-
-        };
-    };
-
-    private double calDistance(){
-        LatLng from = new LatLng(curLatitude, curLongtiude);
-        LatLng to = new LatLng(toLattiude, toLongtitude);
-
-        double distance =  SphericalUtil.computeDistanceBetween(from, to);
-
-        //customToast("Distance is "+distance);
-
-        return distance;
-
-    }
-
-
-
-
-
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setSmallestDisplacement(0.5f);
-        mLocationRequest.setInterval(1000); // two minute interval
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        buildGoogleApiClient();
-    }
 }
