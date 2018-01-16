@@ -473,5 +473,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }catch (SecurityException e){
             Log.d(TAG, e.getMessage());
         }
+
     }
 }
