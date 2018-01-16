@@ -31,6 +31,8 @@
         <activity android:name=".SnoozeActivity"></activity>
 
         <service android:name=".Utils.CurrentLocationService" />
+        <service android:name=".GeofenceRegistrationService" />
+
     </application>
 
 </manifest>

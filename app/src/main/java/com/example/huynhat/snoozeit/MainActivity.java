@@ -1,18 +1,23 @@
 package com.example.huynhat.snoozeit;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,6 +37,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.Place;
@@ -41,8 +48,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -53,7 +63,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private static final String TAG = "MainActivity";
 
@@ -80,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleApiClient googleApiClient;
     private PlaceInfo mPlace;
     private Geofencing geofencing;
+    private Marker currentLocationMarker;
+    private MarkerOptions markerOptions;
 
     private double currentLongtiude;
     private double currentLattitude;
@@ -213,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         customToast("Welcome to Snooze It!");
@@ -221,21 +234,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mLocationPermissionGranted) {
             getDeviceCurrentLocation();
             //Set a blue dot to mark that location
-
-
-            if (ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
@@ -373,6 +371,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             moveCamera(new LatLng(place.getViewport().getCenter().latitude,place.getViewport().getCenter().longitude)
                     ,DEFAULT_ZOOM, mPlace.getName());
 
+            //Add a green circle
+            Circle circle = mMap.addCircle(new CircleOptions().center(new LatLng(toLattiude, toLongtitude))
+                                                                .radius(Geofencing.GEOFENCE_RADIUS)
+                                                                .strokeColor(getResources().getColor(R.color.colorPrimary))
+                                                                .strokeWidth(4f));
+
             geofencing.updateGeofencesList(place);
             geofencing.registerGeofence();
             hideKeyboard(MainActivity.this);
@@ -423,4 +427,51 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        startLocationMonitoring();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if(googleApiClient!=null){
+            googleApiClient.reconnect();
+        }
+
+    }
+
+    private void startLocationMonitoring(){
+        Log.d(TAG, "Start location monitoring");
+        LocationRequest locationRequest = LocationRequest.create()
+                .setInterval(2000)
+                .setFastestInterval(1000)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        try{
+            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    if(currentLocationMarker!=null){
+                        currentLocationMarker.remove();
+                    }else {
+                        markerOptions = new MarkerOptions();
+                        markerOptions.position(new LatLng(location.getLatitude(), location.getLongitude()));
+                        markerOptions.title("Current Location");
+
+                        currentLocationMarker = mMap.addMarker(markerOptions);
+
+                    }
+                }
+            });
+        }catch (SecurityException e){
+            Log.d(TAG, e.getMessage());
+        }
+    }
 }

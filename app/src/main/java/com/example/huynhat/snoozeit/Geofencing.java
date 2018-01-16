@@ -24,7 +24,7 @@ import java.util.List;
 
 public class Geofencing implements ResultCallback {
     private static final String TAG = Geofencing.class.getSimpleName();
-    private static final float GEOFENCE_RADIUS = 50; //50 meters
+    public static final float GEOFENCE_RADIUS = 50; //50 meters
     private static final long GEOFENCE_TIMEOUT = 24*60*60*1000; //24 hours
 
     private List<Geofence> geofenceList;
@@ -37,7 +37,8 @@ public class Geofencing implements ResultCallback {
         this.context = context;
         this.googleApiClient = googleApiClient;
         geofencePendingIntent = null;
-        geofenceList = new ArrayList<>();
+        //geofenceList = new ArrayList<>();
+        mGeofence = null;
     }
 
 
@@ -119,8 +120,8 @@ public class Geofencing implements ResultCallback {
             return geofencePendingIntent;
         }
 
-        Intent intent = new Intent(context, GeofenceBroadcastReceiver.class);
-        geofencePendingIntent = PendingIntent.getBroadcast(context, 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(context, GeofenceRegistrationService.class);
+        geofencePendingIntent = PendingIntent.getService(context, 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
         return geofencePendingIntent;
     }
 
